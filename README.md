@@ -56,6 +56,7 @@ open index.html # ou abra manualmente o arquivo no seu navegador
 
 ## 📸 Screenshots
 
+<img width="1668" height="896" alt="image" src="https://github.com/user-attachments/assets/d8a76903-fe59-46cc-b398-9cca0a39fcfe" />
 
 -----
 
