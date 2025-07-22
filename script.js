@@ -19,7 +19,6 @@ const Gameboard = (function(){
     const printBoard = () => {
       const boardWithCellValues = board.map((row) => row.map((cell) => cell.getValue()))
       boardWithCellValues.forEach((row)=>console.log(row))
-      // console.log(boardWithCellValues); //for i in board print row
     };
 
     const dropToken = (row,column, player) => {
@@ -41,11 +40,11 @@ const Gameboard = (function(){
 // ----------------------------------------------------------------------- 
 
 function createCell() {
-  let value = 0;
+  let value = "";
   
   // Accept a player's token to change the value of the cell
-  const addToken = (player) => {
-    value = player;
+  const addToken = (token) => {
+    value = token;
   };
 
   // How we will retrieve the current value of this cell through closure
@@ -111,11 +110,8 @@ const gameLogic = (function(){
 // -----------------------------------------------------------------------
 
 
-const gameController=(function (){ //preciso usar só uma vez?
+const gameController=(function (player1,player2){ 
   console.log("Bem vindos ao jogo!")
-
-  const player1=createPlayer("Rosineide","O");
-  const player2=createPlayer("Thiagao","X");
   
   const board=Gameboard();
 
@@ -132,92 +128,178 @@ const gameController=(function (){ //preciso usar só uma vez?
       
   const getActivePlayer=()=> activePlayer;
   const getRound=()=>round;
+
+  const resetRound=()=>{
+    round=0
+  }
   
   const printNewRound = ()=>{
     board.printBoard();
     console.log(`${getActivePlayer().name}'s turn.`)
-  };
+  };//nao vai precisar mais
+  let fimDeJogo=false;
   
   const playRound = (row,column)=>{
 
-    console.log(`Putting ${getActivePlayer().name}'s mark into row ${row+1} and column ${column+1}\n`)
-    let validTurn=board.dropToken(row,column,getActivePlayer())
     
-    if(validTurn){
-      if(gameLogic.checkVictory(board,row,column,getActivePlayer().token)){
-        console.log(`O jogador ${getActivePlayer().name} é o vencedor.\nFim de jogo!Obrigado por jogar!`)
-        return false
-      }
-      else if(gameLogic.checkEndOfGame(round)){
-        console.log(`Não há vencedores: Empate,fim de jogo!Obrigado por jogar!`)
-        return false
+      let validTurn=board.dropToken(row,column,getActivePlayer())
+      if(validTurn){
+        if(gameLogic.checkVictory(board,row,column,getActivePlayer().token)){
+          fimDeJogo=true
+          return {
+            message:`O jogador ${getActivePlayer().name} é o vencedor.Fim de jogo!\nObrigado por jogar!`}
+          }
+          else if(gameLogic.checkEndOfGame(round)){
+          fimDeJogo=true
+          return {
+            message:`Empate!\nObrigado por jogar!`
+          }
+        }
+        else{
+          increaseRound();
+          switchPlayerTurn();
+          return {
+            message:null
+          }
+        }
       }
       else{
-        increaseRound();
-        switchPlayerTurn();
-        printNewRound();
-        return true
+        return {
+            message:`Jogada inválida tente novamente!`
+          }
       }
-    }
-    else{
-      //jogada foi invalida vai ter que refazer
-      printNewRound();
-      return true
-    }
   };
 
-  const readline = require("readline");
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  const askMove = () => {
-    rl.question(`\n${getActivePlayer().name}, digite a linha (1-3): `, (rowStr) => {
-      rl.question(`Digite a coluna (1-3): `, (colStr) => {
-        let row = parseInt(rowStr);
-        let col = parseInt(colStr);
-        row--;
-        col--;
-
-        if (isNaN(row) || isNaN(col) || row < 0 || row > 2 || col < 0 || col > 2) {
-          console.log("Entrada inválida. Tente novamente.");
-          askMove();
-          return;
-        }
-
-        // console.log() //so pra pular linha
-
-        const continueGame = playRound(row, col);
-
-        if (continueGame) {
-          // Continua pedindo jogadas
-          askMove();
-        } else {
-          // Fim do jogo
-          rl.close();
-          // console.log("Fim do jogo. Obrigado por jogar!");
-        }
-      });
-    });
-  };
-
-  // Start the game loop
-  printNewRound();
-  askMove();
+  const isFimDeJogo=()=>{
+    return fimDeJogo
+  }
 
   return {
     playRound,
     getActivePlayer,
     getBoard: board.getBoard,
-    getRound
+    getRound,
+    resetRound,
+    isFimDeJogo
   };
       
 });
 
-const screenController=()=>{
-  const game = GameController();
-}
+const screenController=(()=>{
+  const form=document.getElementById('players-name');
+  const playerTurnDiv=document.querySelector('.player-turn')
+  const roundCounterDiv=document.querySelector('.round-counter')
+  const gameText=document.querySelector('.game-text')
+  const boardDiv=document.querySelector('.gameboard')
+  const resetBut=document.getElementById('reset-board')
+
+  const resetarBoard=(game)=>{
+    boardDiv.textContent="";
+    board.forEach((row,rowIndex) =>{ 
+        row.forEach((cell,cellIndex)=>{
+          const cellButton = document.createElement("button")
+          cellButton.classList.add("cell");
+          cellButton.dataset.row=rowIndex
+          cellButton.dataset.column=cellIndex
+          cellButton.textContent=cell.getValue();
+          boardDiv.appendChild(cellButton);
+        })
+      })
+  }
+
+  const updateScreen=(game,message,resetar)=>{
+      boardDiv.textContent="";
+  
+      const board=game.getBoard();
+      const activePlayer= game.getActivePlayer();
+      
+      if(!resetar){
+        if(game.isFimDeJogo()){
+          playerTurnDiv.textContent=``
+          roundCounterDiv.textContent=``
+          gameText.textContent=message
+        }
+        else{
+          playerTurnDiv.textContent=`Vez de ${activePlayer.name}!`
+          roundCounterDiv.textContent=`Round ${game.getRound()}`
+
+          const frases = [
+            "A persistência realiza o impossível.",
+            "Acredite no seu potencial.",
+            "Cada passo conta, continue!",
+            "Você é mais forte do que pensa.",
+            "Tudo começa com uma atitude.",
+            "Erros são parte do caminho.",
+            "O sucesso é a soma de pequenos esforços.",
+            "Nunca é tarde para recomeçar.",
+          ];
+
+          // Pega uma frase aleatória
+          const fraseAleatoria = frases[Math.floor(Math.random() * frases.length)];
+
+          gameText.textContent=fraseAleatoria;
+
+        }
+      }
+      else{
+        playerTurnDiv.textContent=`Bem vindo ao jogo!`
+        roundCounterDiv.textContent=``
+        gameText.textContent="Pressione iniciar para começar"
+
+        // resetar round
+      } 
+      board.forEach((row,rowIndex) =>{ 
+        row.forEach((cell,cellIndex)=>{
+          const cellButton = document.createElement("button")
+          cellButton.classList.add("cell");
+          cellButton.dataset.row=rowIndex
+          cellButton.dataset.column=cellIndex
+          cellButton.textContent=cell.getValue();
+          boardDiv.appendChild(cellButton);
+        })
+      })
+    }
+  
+  form.addEventListener('submit',(e)=>{
+    e.preventDefault();
+    
+    const player1Name=document.getElementById('player1').value.trim();
+    const player2Name=document.getElementById('player2').value.trim();
+    //pegar simbolos dps
+    
+    const player1=createPlayer(player1Name,"O")
+    const player2=createPlayer(player2Name,"X")
+  
+    const game = gameController(player1,player2);
+
+    // reset
+    updateScreen(game,"");
+
+    boardDiv.addEventListener("click",(e)=>{
+      if(!game.isFimDeJogo()){
+        if (e.target.classList.contains("cell")) {
+          const selectedColumn = parseInt(e.target.dataset.column);
+          const selectedRow = parseInt(e.target.dataset.row);
+          const mensagem = game.playRound(selectedRow, selectedColumn);
+          updateScreen(game, mensagem.message,false);
+        }
+      }
+    })
+
+    resetBut.addEventListener('click',(e)=>{
+      game.getBoard().forEach(row => {
+        row.forEach(cell => {
+          cell.addToken(""); // ou null, ou " " dependendo do seu jogo
+        });
+      });
+      game.resetRound();
+      updateScreen(game,"",true);
+  
+    })
+  })
+
+
+})();
 
     
 

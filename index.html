@@ -5,10 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic-Tac-Toe</title>
     <link rel="stylesheet" href="style.css">
-    <script src="script.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Prop+Double:wght@100..900&display=swap" rel="stylesheet">
+
 </head>
 <body>
-    oi
+    <div class="container">
+        <div class="gameheader-container">
+            <div class="gameheader">
+                <!-- <button class="title">Tic-Tac-Toe</button> -->
+                <button class="title">Tic-Tac-Toe</button>
+                <form  id="players-name">
+                    <div class="form-wraper">
+                        <label for="player1">Jogador 1</label>
+                        <input type="text" id="player1" placeholder="Jogador 1*" required>
+                    </div>
+                    <div class="form-wraper">
+                        <label for="player1">Jogador 2</label>
+                        <input type="text" id="player2" placeholder="Jogador 2*" required>
+                    </div>
+                    <div class="form-wraper-last">
+                        <button type="submit" class="form-but">Iniciar partida!</button>
+                        <button type="button" class="form-but" id="reset-board">Resetar Tabuleiro</button>
+                    </div>
+                </form> 
+                <div class="game-text-container">
+                    <div class="turn-round">
+                        <div class="player-turn">Bem vindo ao jogo!</div>
+                        <div class="round-counter"></div>
+                    </div>
+                    <div class="game-text"> Pressione iniciar para começar</div>
+                </div>
+            </div>
+        </div>
+        <div class="gameboard-container">
+            <div class="gameboard">
+                <button class="cell"></button><button class="cell"></button><button class="cell"></button><button class="cell"></button><button class="cell"></button><button class="cell"></button><button class="cell"></button><button class="cell"></button><button class="cell"></button>
+            </div>
+        </div>
+    </div>
     
+    <script src="script.js"></script>
 </body>
 </html>
